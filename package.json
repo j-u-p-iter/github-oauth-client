@@ -26,6 +26,13 @@
     "test": "jupiter-scripts test"
   },
   "devDependencies": {
-    "@j.u.p.iter/jupiter-scripts": "^1.6.0"
+    "@j.u.p.iter/jupiter-scripts": "^1.6.0",
+    "@types/qs": "^6.5.3",
+    "qs": "^6.7.0"
+  },
+  "dependencies": {
+    "@j.u.p.iter/node-utils": "^1.1.0",
+    "@types/axios": "^0.14.0",
+    "axios": "^0.19.0"
   }
 }
