@@ -1,4 +1,6 @@
 import qs from 'qs';
+import nock from 'nock';
+
 import { GithubOAuthClient } from '.';
 import { AUTHORIZE_APP_URL, SCOPES } from './constants';
 
@@ -11,6 +13,14 @@ describe('Github OAuth Client', () => {
   };
 
   beforeAll(() =>{ 
+    nock("https://github.com")
+      .post("/login/oauth/access_token", (body: { [key: string]: string }) => body.code)
+      .reply(200, { access_token: "some-access-token" });
+
+    nock("https://api.github.com")
+      .get('/user')
+      .reply(200, {});
+
     githubOAuthClient = new GithubOAuthClient(config);
   });
 
