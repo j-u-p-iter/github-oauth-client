@@ -12,14 +12,21 @@ describe("Github OAuth Client", () => {
     clientSecret: "some-client-secret",
     redirectUrl: "some-redirect-url"
   };
-  const CODE_WITH_EMAIL = "codeWithEmail";
-  const CODE_WITHOUT_EMAIL = "codeWithoutEmail";
 
-  const ACCESS_TOKEN_WITH_EMAIL = "accessTokenWithEmail";
-  const ACCESS_TOKEN_WITHOUT_EMAIL = "accessTokenWithoutEmail";
+  enum Email {
+    Public = "public@email.com",
+    Private = "private@email.com"
+  }
 
-  const PUBLICLY_AVAILABLE_EMAIL = "publicly.available@email.com";
-  const PRIVATE_PRIMARY_EMAIL = "j.prototype.unit@gmail.com";
+  enum Code {
+    WithEmail = "withEmail",
+    WithoutEmail = "withoutEmail"
+  }
+
+  enum AccessToken {
+    WithEmail = "withEmail",
+    WithoutEmail = "withoutEmail"
+  }
 
   const USER_PROFILE_ID = 12345;
   const USER_NAME = "Some Name";
@@ -34,9 +41,9 @@ describe("Github OAuth Client", () => {
       .reply(function(_, requestBody) {
         const { code } = JSON.parse(requestBody.toString());
         const accessToken =
-          code === CODE_WITH_EMAIL
-            ? ACCESS_TOKEN_WITH_EMAIL
-            : ACCESS_TOKEN_WITHOUT_EMAIL;
+          code === Code.WithEmail
+            ? AccessToken.WithEmail
+            : AccessToken.WithoutEmail;
 
         return [HTTPStatus.OK, { access_token: accessToken }];
       });
@@ -48,9 +55,7 @@ describe("Github OAuth Client", () => {
         const accessToken = this.req.headers.authorization.split(" ")[1];
         console.log(accessToken);
         const email =
-          accessToken === ACCESS_TOKEN_WITH_EMAIL
-            ? PUBLICLY_AVAILABLE_EMAIL
-            : null;
+          accessToken === AccessToken.WithEmail ? Email.Public : null;
 
         return [
           HTTPStatus.OK,
@@ -79,7 +84,7 @@ describe("Github OAuth Client", () => {
           visibility: null
         },
         {
-          email: PRIVATE_PRIMARY_EMAIL,
+          email: Email.Private,
           primary: true,
           verified: true,
           visibility: "public"
@@ -110,10 +115,10 @@ describe("Github OAuth Client", () => {
   describe("signIn", () => {
     describe("when userData contains publicly available email", () => {
       it("works correctly", async () => {
-        const data = await githubOAuthClient.signIn(CODE_WITH_EMAIL);
+        const data = await githubOAuthClient.signIn(Code.WithEmail);
 
         expect(data).toEqual({
-          email: PUBLICLY_AVAILABLE_EMAIL,
+          email: Email.Public,
           profileId: USER_PROFILE_ID,
           name: USER_NAME
         });
@@ -122,10 +127,10 @@ describe("Github OAuth Client", () => {
 
     describe("when userData does not contain publicly available email", () => {
       it("works correctly", async () => {
-        const data = await githubOAuthClient.signIn(CODE_WITHOUT_EMAIL);
+        const data = await githubOAuthClient.signIn(Code.WithoutEmail);
 
         expect(data).toEqual({
-          email: PRIVATE_PRIMARY_EMAIL,
+          email: Email.Private,
           profileId: USER_PROFILE_ID,
           name: USER_NAME
         });
