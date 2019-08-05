@@ -1,1 +1,1 @@
-export { GithubOAuthClient } from './GithubOAuthClient';
+export { GithubOAuthClient } from "./GithubOAuthClient";
