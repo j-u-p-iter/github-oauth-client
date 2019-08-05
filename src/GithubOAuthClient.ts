@@ -66,7 +66,7 @@ export class GithubOAuthClient implements OAuthClient {
     const authUrl = makeUrl({
       port: null,
       protocol: "https",
-      host: AUTHORIZE_APP_URL,
+      host: AUTHORIZE_APP_URL.replace("https://", ""),
       queryObject: {
         client_id: this.config.clientId,
         redirect_uri: this.config.redirectUrl,

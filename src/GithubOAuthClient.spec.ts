@@ -1,3 +1,4 @@
+import HTTPStatus from "http-status";
 import nock from "nock";
 import qs from "qs";
 
@@ -11,6 +12,17 @@ describe("Github OAuth Client", () => {
     clientSecret: "some-client-secret",
     redirectUrl: "some-redirect-url"
   };
+  const CODE_WITH_EMAIL = "codeWithEmail";
+  const CODE_WITHOUT_EMAIL = "codeWithoutEmail";
+
+  const ACCESS_TOKEN_WITH_EMAIL = "accessTokenWithEmail";
+  const ACCESS_TOKEN_WITHOUT_EMAIL = "accessTokenWithoutEmail";
+
+  const PUBLICLY_AVAILABLE_EMAIL = "publicly.available@email.com";
+  const PRIVATE_PRIMARY_EMAIL = "j.prototype.unit@gmail.com";
+
+  const USER_PROFILE_ID = 12345;
+  const USER_NAME = "Some Name";
 
   beforeAll(() => {
     nock("https://github.com")
@@ -22,9 +34,11 @@ describe("Github OAuth Client", () => {
       .reply(function(_, requestBody) {
         const { code } = JSON.parse(requestBody.toString());
         const accessToken =
-          code === "with email" ? "tokenWithEmail" : "tokenWithoutEmail";
+          code === CODE_WITH_EMAIL
+            ? ACCESS_TOKEN_WITH_EMAIL
+            : ACCESS_TOKEN_WITHOUT_EMAIL;
 
-        return [200, { access_token: accessToken }];
+        return [HTTPStatus.OK, { access_token: accessToken }];
       });
 
     nock("https://api.github.com")
@@ -34,13 +48,15 @@ describe("Github OAuth Client", () => {
         const accessToken = this.req.headers.authorization.split(" ")[1];
         console.log(accessToken);
         const email =
-          accessToken === "tokenWithEmail" ? "some@email.com" : null;
+          accessToken === ACCESS_TOKEN_WITH_EMAIL
+            ? PUBLICLY_AVAILABLE_EMAIL
+            : null;
 
         return [
-          200,
+          HTTPStatus.OK,
           {
-            id: 12345,
-            name: "Some Name",
+            id: USER_PROFILE_ID,
+            name: USER_NAME,
             email
           }
         ];
@@ -49,7 +65,7 @@ describe("Github OAuth Client", () => {
     nock("https://api.github.com")
       .persist()
       .get("/user/emails")
-      .reply(200, [
+      .reply(HTTPStatus.OK, [
         {
           email: "tnk2006@rambler.ru",
           primary: false,
@@ -63,7 +79,7 @@ describe("Github OAuth Client", () => {
           visibility: null
         },
         {
-          email: "j.prototype.unit@gmail.com",
+          email: PRIVATE_PRIMARY_EMAIL,
           primary: true,
           verified: true,
           visibility: "public"
@@ -79,7 +95,7 @@ describe("Github OAuth Client", () => {
       const resultHost = result.split("?")[0];
       const resultQueryParams = qs.parse(result.split("?")[1]);
 
-      const expectedHost = `https://${AUTHORIZE_APP_URL}`;
+      const expectedHost = AUTHORIZE_APP_URL;
       const expectedQueryParams = {
         client_id: config.clientId,
         redirect_uri: config.redirectUrl,
@@ -94,24 +110,24 @@ describe("Github OAuth Client", () => {
   describe("signIn", () => {
     describe("when userData contains publicly available email", () => {
       it("works correctly", async () => {
-        const data = await githubOAuthClient.signIn("with email");
+        const data = await githubOAuthClient.signIn(CODE_WITH_EMAIL);
 
         expect(data).toEqual({
-          email: "some@email.com",
-          profileId: 12345,
-          name: "Some Name"
+          email: PUBLICLY_AVAILABLE_EMAIL,
+          profileId: USER_PROFILE_ID,
+          name: USER_NAME
         });
       });
     });
 
     describe("when userData does not contain publicly available email", () => {
       it("works correctly", async () => {
-        const data = await githubOAuthClient.signIn("withoutEmail");
+        const data = await githubOAuthClient.signIn(CODE_WITHOUT_EMAIL);
 
         expect(data).toEqual({
-          email: "j.prototype.unit@gmail.com",
-          profileId: 12345,
-          name: "Some Name"
+          email: PRIVATE_PRIMARY_EMAIL,
+          profileId: USER_PROFILE_ID,
+          name: USER_NAME
         });
       });
     });
