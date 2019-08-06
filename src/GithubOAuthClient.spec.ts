@@ -3,7 +3,14 @@ import nock from "nock";
 import qs from "qs";
 
 import { GithubOAuthClient } from ".";
-import { AUTHORIZE_APP_URL, SCOPES } from "./constants";
+import { 
+  AUTHORIZE_APP_URL, 
+  GITHUB_HOST, 
+  GITHUB_ACCESS_TOKEN_PATH,
+  GITHUB_API_HOST, SCOPES, 
+  GITHUB_USER_PATH,
+  GITHUB_USER_EMAILS_PATH,
+} from "./constants";
 
 describe("Github OAuth Client", () => {
   let githubOAuthClient: GithubOAuthClient;
@@ -32,10 +39,10 @@ describe("Github OAuth Client", () => {
   const USER_NAME = "Some Name";
 
   beforeAll(() => {
-    nock("https://github.com")
+    nock(GITHUB_HOST)
       .persist()
       .post(
-        "/login/oauth/access_token",
+        GITHUB_ACCESS_TOKEN_PATH,
         (body: { [key: string]: string }) => body.code
       )
       .reply(function(_, requestBody) {
@@ -48,9 +55,9 @@ describe("Github OAuth Client", () => {
         return [HTTPStatus.OK, { access_token: accessToken }];
       });
 
-    nock("https://api.github.com")
+    nock(GITHUB_API_HOST)
       .persist()
-      .get("/user")
+      .get(GITHUB_USER_PATH)
       .reply(function() {
         const accessToken = this.req.headers.authorization.split(" ")[1];
         console.log(accessToken);
@@ -67,9 +74,9 @@ describe("Github OAuth Client", () => {
         ];
       });
 
-    nock("https://api.github.com")
+    nock(GITHUB_API_HOST)
       .persist()
-      .get("/user/emails")
+      .get(GITHUB_USER_EMAILS_PATH)
       .reply(HTTPStatus.OK, [
         {
           email: "tnk2006@rambler.ru",
