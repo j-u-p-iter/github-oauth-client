@@ -3,13 +3,14 @@ import nock from "nock";
 import qs from "qs";
 
 import { GithubOAuthClient } from ".";
-import { 
-  AUTHORIZE_APP_URL, 
-  GITHUB_HOST, 
+import {
+  AUTHORIZE_APP_URL,
   GITHUB_ACCESS_TOKEN_PATH,
-  GITHUB_API_HOST, SCOPES, 
-  GITHUB_USER_PATH,
+  GITHUB_API_HOST,
+  GITHUB_HOST,
   GITHUB_USER_EMAILS_PATH,
+  GITHUB_USER_PATH,
+  SCOPES
 } from "./constants";
 
 describe("Github OAuth Client", () => {
